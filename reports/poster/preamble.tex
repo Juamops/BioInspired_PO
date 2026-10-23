@@ -1,0 +1,121 @@
+% Shared preamble of poster_en.tex and poster_es.tex (A0 portrait).
+\documentclass{article}
+\usepackage[paperwidth=841mm,paperheight=1189mm,margin=0mm]{geometry}
+\usepackage{fontspec}
+\usepackage{unicode-math}
+\usepackage[table]{xcolor}
+\usepackage{graphicx}
+\usepackage{tabularx}
+\usepackage{array}
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\tcbuselibrary{skins}
+\usepackage{tikz}
+\usetikzlibrary{positioning,arrows.meta,calc}
+
+\setmainfont{Inter_FXH}[Path=C:/Windows/Fonts/, Extension=.ttf, UprightFont=*-Regular, BoldFont=*-Bold,
+  ItalicFont=*-Italic, BoldItalicFont=*-BoldItalic]
+\setmathfont{Cambria Math}
+\setmathfont{Inter_FXH-Regular.ttf}[Path=C:/Windows/Fonts/, range={up/{latin,Latin,num}}]
+\setmathfont{Inter_FXH-Italic.ttf}[Path=C:/Windows/Fonts/, range={it/{latin,Latin,greek,Greek}}]
+
+% deep-blue palette with cool neutrals; the same blue marks "this work" in the figures
+\definecolor{ink}{HTML}{1A1D24}
+\definecolor{muted}{HTML}{5A6170}
+\definecolor{rule}{HTML}{D6DAE1}
+\definecolor{tile}{HTML}{EEF2F8}
+\definecolor{accent}{HTML}{1A4D9C}
+\definecolor{accentlight}{HTML}{E6EDF8}
+\definecolor{head}{HTML}{0E2550}
+\definecolor{headrule}{HTML}{3F72C6}
+\definecolor{headmuted}{HTML}{C5D0E3}
+
+% layout: 24 mm side margins, three 251 mm columns with 20 mm gaps
+\newlength{\colw}\setlength{\colw}{251mm}
+\newlength{\gap}\setlength{\gap}{20mm}
+\newlength{\wide}\setlength{\wide}{522mm}
+\newlength{\full}\setlength{\full}{793mm}
+\newlength{\rowgap}\setlength{\rowgap}{20mm}
+
+\newcommand{\body}{\fontsize{25pt}{32pt}\selectfont\raggedright}
+\newcommand{\smalltext}{\fontsize{20pt}{25pt}\selectfont}
+\newcommand{\sect}[2]{{\fontsize{38pt}{44pt}\selectfont\bfseries{\color{accent}#1}\hspace{0.45em}#2\par}\vspace{6mm}}
+\newcommand{\plainsect}[1]{{\fontsize{38pt}{44pt}\selectfont\bfseries #1\par}\vspace{6mm}}
+\newcommand{\sub}[1]{{\fontsize{27pt}{33pt}\selectfont\bfseries #1\par}\vspace{2.5mm}}
+\newcommand{\refcite}[1]{{\color{muted}[#1]}}
+
+\setlist[itemize]{label={\color{accent}\rule[0.27em]{0.4em}{0.4em}}, leftmargin=1.1em, itemsep=2.5mm, topsep=1mm,
+  parsep=0mm}
+
+% header band: title, subtitle, authors, the paper this work builds on
+\newcommand{\posterheader}[4]{%
+  \begin{tikzpicture}[remember picture, overlay]
+    \fill[head] (current page.north west) rectangle ($(current page.north east) + (0,-142mm)$);
+    \fill[headrule] ($(current page.north west) + (0,-142mm)$) rectangle ($(current page.north east) + (0,-145mm)$);
+  \end{tikzpicture}%
+  \vspace*{22mm}
+
+  \hspace*{24mm}\begin{minipage}[t]{\full}
+    \color{white}
+    {\fontsize{98pt}{106pt}\selectfont\bfseries #1\par}
+    \vspace{7mm}
+    {\fontsize{40pt}{48pt}\selectfont\color{headmuted}#2\par}
+    \vspace{10mm}
+    {\fontsize{30pt}{38pt}\selectfont\bfseries #3\par}
+    \vspace{2mm}
+    {\fontsize{24pt}{31pt}\selectfont\color{headmuted}#4\par}
+  \end{minipage}
+
+  \vspace{40mm}}
+
+% stat tile: big number, what it measures, the paper's value
+\newcommand{\stat}[3]{%
+  \begin{tcolorbox}[enhanced, colback=tile, colframe=tile, boxrule=0pt, arc=4mm, width=\linewidth,
+    left=8mm, right=5mm, top=5mm, bottom=5mm, before skip=0pt, after skip=0pt]
+    {\fontsize{58pt}{62pt}\selectfont\bfseries #1\par}\vspace{2.5mm}
+    {\fontsize{23pt}{28pt}\selectfont\bfseries #2\par}\vspace{1mm}
+    {\fontsize{20pt}{25pt}\selectfont\color{muted}#3\par}
+  \end{tcolorbox}}
+
+% HRP repair sketch: a single-linkage dendrogram; #1 duplicate label, #2 held, #3 free
+\newcommand{\hrpdiagram}[3]{%
+  \begin{tikzpicture}[x=1mm, y=1mm, line width=1.6pt, line cap=round]
+    \draw[muted] (0,0)--(0,10)--(22,10)--(22,0);
+    \draw[muted] (44,0)--(44,15)--(66,15)--(66,0);
+    \draw[muted] (11,10)--(11,28)--(55,28)--(55,15);
+    \draw[muted] (88,0)--(88,8)--(110,8)--(110,0);
+    \draw[muted] (132,0)--(132,18)--(154,18)--(154,0);
+    \draw[muted] (99,8)--(99,23)--(143,23)--(143,18);
+    \draw[muted] (33,28)--(33,37)--(121,37)--(121,23);
+    \foreach \x/\held in {0/1, 22/0, 44/1, 66/0, 88/0, 110/1, 132/0, 154/1} {
+      \ifnum\held=1 \fill[ink] (\x,0) circle (3.2mm);
+      \else \filldraw[draw=muted, fill=white, line width=1.5pt] (\x,0) circle (3.2mm); \fi }
+    \filldraw[draw=accent, fill=accent] (66,0) circle (3.2mm);
+    \draw[accent, line width=2.4pt, -{Stealth[length=5mm, width=4.5mm]}] (46,-5) to[bend right=45] (64,-5);
+    \node[font=\smalltext, text=ink, anchor=north] at (55,-13) {#1};
+    \fill[ink] (170,22) circle (2.6mm); \node[font=\smalltext, anchor=west, text=muted] at (175,22) {#2};
+    \filldraw[draw=muted, fill=white, line width=1.4pt] (170,10) circle (2.6mm);
+    \node[font=\smalltext, anchor=west, text=muted] at (175,10) {#3};
+  \end{tikzpicture}}
+
+% hybrid loop: #1 genotype, #2 operators, #3 repair, #4 QP, #5 loop label
+\newcommand{\pipeline}[5]{%
+  \begin{tikzpicture}[x=1mm, y=1mm,
+      box/.style={draw=ink, line width=1.5pt, rounded corners=3mm, align=center, minimum height=23mm,
+        text width=49mm, font=\fontsize{19pt}{23pt}\selectfont, fill=white, inner xsep=1.5mm},
+      arr/.style={-{Stealth[length=4.5mm, width=4mm]}, line width=1.7pt, draw=muted}]
+    \node[box] (g) at (0,0) {#1};
+    \node[box, right=5mm of g] (v) {#2};
+    \node[box, right=5mm of v] (r) {#3};
+    \node[box, right=5mm of r, draw=accent, fill=accentlight, line width=2.4pt] (q) {#4};
+    \draw[arr] (g) -- (v); \draw[arr] (v) -- (r); \draw[arr] (r) -- (q);
+    \draw[arr] (q.south) -- ++(0,-11) -| (g.south);
+    \node[font=\smalltext, text=muted, fill=white, inner xsep=3mm] at ($(g.south)!0.5!(q.south) + (0,-11)$) {#5};
+  \end{tikzpicture}}
+
+% table rules
+\newcommand{\rowrule}{\hline\noalign{\vspace{3mm}}}
+
+\pagestyle{empty}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0pt}

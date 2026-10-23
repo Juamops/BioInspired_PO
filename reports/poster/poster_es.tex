@@ -1,0 +1,197 @@
+% Póster en español. Compilar: uv run python make_figures.py y luego lualatex poster_es.tex dos veces.
+\input{preamble}
+
+\begin{document}
+\color{ink}
+\posterheader{Evolucionar los activos, resolver los pesos}
+  {Un enfoque híbrido de metaheurística y programación cuadrática para seleccionar carteras en universos grandes}
+  {Juan Pedro Enriquez y Eduardo Medina}
+  {Replica y amplía Hidalgo-Marín, Nebro y García-Nieto, \emph{Efficient Selection of Investment Portfolios in
+  Real-World Markets}, Algorithms 2026, 19, 20 [1]}
+
+% ------------------------------------------------------------------------------------- fila 1
+\hspace*{24mm}%
+\begin{minipage}[t]{\colw}\body
+  \sect{1}{El problema}
+  Elegir $k$ de $N$ activos y sus pesos para minimizar el riesgo y maximizar el rendimiento:
+  \[
+    \min\,\bigl(\sigma,-R\bigr),\quad \sigma=\sqrt{250\,w^{\top}\Sigma_S\,w},\quad R=\textstyle\sum_{j\in S} w_j\mu_j
+  \]
+  \[
+    |S|=k,\qquad \textstyle\sum_j w_j=1,\qquad \tfrac{1}{2k}\le w_j\le\tfrac{2}{k}
+  \]
+  Las 12 instancias del artículo usan precios diarios de 2023 de activos cotizados en EE.\,UU. La mayor,
+  \textbf{ALL\_20\_6000}, elige $k=20$ de $N=6000$.
+
+  \vspace{9mm}
+  \sub{El estudio original \refcite{1}}
+  \begin{itemize}
+    \item NSGA-II, MOEA/D, SMS-EMOA y SMPSO (jMetal), 30 ejecuciones cada uno.
+    \item Genes reales: $k$ punteros a la lista de activos ordenada por rendimiento y $k$ pesos.
+    \item SMS-EMOA es el mejor. En ALL\_20\_6000 solo SMPSO alcanza el extremo de alto rendimiento.
+  \end{itemize}
+
+  \vspace{9mm}
+  \sub{Nuestra réplica (pymoo)}
+  \begin{itemize}
+    \item Los tres algoritmos evolutivos con la configuración del artículo, 10 ejecuciones cada uno.
+    \item Mismo orden y casi los mismos frentes (hipervolumen 0.944 en ambos en ALL\_20\_6000): las mejoras
+    vienen de los cambios, no de la herramienta.
+  \end{itemize}
+\end{minipage}%
+\hspace{\gap}%
+\begin{minipage}[t]{\wide}\body
+  \sect{2}{Qué cambiamos}
+  {\fontsize{22pt}{28pt}\selectfont
+  \begin{tabularx}{\wide}{@{}>{\bfseries}p{68mm}>{\raggedright\arraybackslash}X>{\raggedright\arraybackslash}X@{}}
+    & {\color{muted}\bfseries Artículo original [1]} & {\color{accent}\bfseries Este trabajo} \\[2mm]
+    \arrayrulecolor{rule}\rowrule
+    Codificación & $2k$ reales: punteros $s_i\in[0,1]$ al activo $\lfloor s_i N\rfloor$ de la lista por
+      rendimiento, más $k$ pesos
+      & \textbf{Por conjuntos}: $k$ activos distintos y un gen de compromiso $t\in[0,1]$ \\[3mm]
+    \rowrule
+    Cruce & SBX en todos los genes ($p_c=0.9$, $\eta=20$)
+      & \textbf{Uniforme por posiciones}: cada activo, de un padre \\[3mm]
+    \rowrule
+    Mutación & Polinómica ($p_m=1/n$, $\eta=20$)
+      & \textbf{Intercambio}: un activo por otro de fuera \\[3mm]
+    \rowrule
+    Duplicados & Siguiente índice de la lista por rendimiento
+      & \textbf{Reparación HRP}: siguiente hoja libre del dendrograma \\[3mm]
+    \rowrule
+    Pesos & Evolucionados, luego normalizados y acotados
+      & \textbf{Exactos}: un QP para los activos elegidos \\[3mm]
+    \rowrule
+    {\mdseries\color{muted}Igual} & \multicolumn{2}{>{\raggedright\arraybackslash}p{440mm}}{\color{muted}algoritmos,
+      parámetros, evaluaciones (50\,000--250\,000 por ejecución), semillas, objetivos, restricciones} \\
+  \end{tabularx}\par}
+
+  \vspace{11mm}
+  \begin{minipage}[t]{\colw}\raggedright
+    \sub{Reparación de colisiones HRP}
+    El cruce por posiciones puede dar a un hijo el mismo activo dos veces. Como en Hierarchical Risk Parity
+    \refcite{2}, los activos se agrupan (enlace simple) según
+    \[ d_{ij}=\sqrt{\tfrac{1}{2}\,(1-\rho_{ij})} \]
+    El orden de las hojas junta a los activos correlacionados: un duplicado pasa a un sustituto cercano.
+
+    \vspace{6mm}
+    \centering
+    \hrpdiagram{duplicado $\to$ hoja vecina}{en cartera}{libre}
+  \end{minipage}%
+  \hspace{\gap}%
+  \begin{minipage}[t]{\colw}\raggedright
+    \sub{Pesos exactos: dividir el MIQP}
+    La metaheurística elige la parte entera (qué activos). Lo que queda es un QP convexo en los 20 pesos,
+    resuelto de forma exacta para cada cartera (quadprog \refcite{3}):
+    \[
+      \min_{w}\,\gamma\,\sigma^2-R,\quad \textstyle\sum_j w_j=1,\;\tfrac{1}{2k}\le w_j\le\tfrac{2}{k},\quad
+      \gamma=10^{-2+6t}
+    \]
+    $t$ recorre la frontera eficiente de los activos elegidos.
+
+    \vspace{6mm}
+    \centering
+    \pipeline{conjunto $S$\\gen $t$}{cruce +\\intercambio}{reparación\\HRP}{pesos QP\\$w^{*}(S,t)$}
+      {evaluar $(\sigma,R)$ y seleccionar}
+  \end{minipage}
+\end{minipage}
+
+\vspace{\rowgap}
+% ------------------------------------------------------------------------------------- fila 2
+\hspace*{24mm}\begin{minipage}[t]{\full}\body
+  \sect{3}{Resultados en la instancia mayor: ALL\_20\_6000}
+  \vspace{-2mm}
+  {\color{muted}6\,000 activos, $k=20$, 250\,000 evaluaciones por ejecución. Un frente de referencia reúne todas
+  las ejecuciones de todos los algoritmos: 4 $\times$ 30 en el artículo, 3 $\times$ 10 en este trabajo.\par}
+  \vspace{5mm}
+  \begin{minipage}[t]{600mm}
+    \vspace{0pt}
+    \includegraphics[width=600mm]{figures/fig_all20_6000_es.pdf}\par
+    \vspace{2mm}
+    {\smalltext\color{muted}(b) Las rectas desde la tasa libre de riesgo $R_f=6.97\,\%$ tocan cada frente en su
+    mejor ratio de Sharpe $\mathrm{SR}=(R-R_f)/\sigma$, su pendiente. (c) Ratio de Sharpe de cada cartera del frente.\par}
+  \end{minipage}%
+  \hspace{20mm}%
+  \begin{minipage}[t]{173mm}
+    \vspace{0pt}
+    \stat{8.95}{mejor ratio de Sharpe}{artículo 7.62 (+18\,\%)}\par\vspace{8mm}
+    \stat{+12 p.\,p.}{rendimiento con 5\,\% de riesgo}{48\,\% vs 36\,\%}\par\vspace{8mm}
+    \stat{0.82\,\%}{riesgo mínimo}{artículo 1.41\,\%}\par\vspace{8mm}
+    \stat{0.951}{hipervolumen}{artículo 0.944}
+  \end{minipage}
+
+  \vspace{8mm}
+  La mejora está bajo el 15\,\% de riesgo, donde 20 pesos son difíciles de evolucionar; por encima los frentes
+  coinciden (extremo superior: 214\,\% frente a 219\,\%).
+\end{minipage}
+
+\vspace{\rowgap}
+% ------------------------------------------------------------------------------------- fila 3
+\hspace*{24mm}%
+\begin{minipage}[t]{\colw}\body
+  \sect{4}{La mejora crece con $N$}
+  \includegraphics[width=\colw]{figures/fig_scaling_es.pdf}\par
+  \vspace{4mm}
+  Mejor hipervolumen e IGD+ en las cinco instancias de 20 activos; la mejora del Sharpe se dispara con
+  $N\ge 3000$. En las instancias de 5 activos los frentes coinciden.
+\end{minipage}%
+\hspace{\gap}%
+\begin{minipage}[t]{\colw}\body
+  \sect{5}{Robustez y costo}
+  \begin{itemize}
+    \item \textbf{Por ejecución}, en las 12 instancias: hipervolumen significativamente mejor que el de la
+    réplica en 33 de 36 pares algoritmo--instancia, nunca peor (Wilcoxon, 5\,\%). El artículo solo publica
+    frentes combinados.
+    \item \textbf{3 empates}, todos en los universos mayores (SMS-EMOA en ALL\_20\_3000 y ALL\_20\_6000,
+    NSGA-II en ALL\_20\_6000). Ahí cada ejecución llega a menos riesgo, pero a un extremo de alto rendimiento
+    más corto: la mutación elige al azar entre 6\,000 activos.
+    \item \textbf{Costo}: mismo presupuesto de evaluaciones. Los QP subieron el tiempo de las 360 ejecuciones de
+    63 a 67 min.
+  \end{itemize}
+\end{minipage}%
+\hspace{\gap}%
+\begin{minipage}[t]{\colw}\body
+  \sect{6}{Fuera de muestra: 2024}
+  Ambos frentes de ALL\_20\_6000 con precios de Yahoo Finance: carteras con el 80\,\% de su peso cotizado en
+  2023--24, sin las de Sharpe negativo en ambos años.
+
+  \vspace{3mm}
+  \includegraphics[width=\colw]{figures/fig_oos_es.pdf}\par
+  \vspace{3mm}
+  Mediana del Sharpe 2023 $\to$ 2024: 6.03 $\to$ $-0.91$ (artículo, 32 de 658 carteras) y 6.30 $\to$ $-1.10$
+  (este trabajo, 54 de 369). Mejora de optimización, no de pronóstico.
+\end{minipage}
+
+\vspace{\rowgap}
+% ------------------------------------------------------------------------------------- fila 4
+\hspace*{24mm}%
+\begin{minipage}[t]{\wide}\body
+  \plainsect{Conclusiones}
+  \begin{itemize}
+    \item Una réplica en pymoo reproduce el orden de los algoritmos y los frentes de referencia del artículo.
+    \item Evolucionar solo los activos (codificación por conjuntos, cruce por posiciones, mutación por
+    intercambio, reparación HRP) y resolver los pesos con un QP da el mejor frente en todas las instancias de
+    20 activos, y la mejora crece con $N$: en ALL\_20\_6000 el mejor ratio de Sharpe pasa de 7.62 a 8.95 con el
+    mismo presupuesto.
+    \item La mejora es dentro de muestra: en 2024 ambos enfoques pierden casi todo su ratio de Sharpe. El
+    siguiente paso son mejores estimaciones de rendimiento y riesgo, más que un mejor optimizador.
+  \end{itemize}
+\end{minipage}%
+\hspace{\gap}%
+\begin{minipage}[t]{\colw}\fontsize{18pt}{23pt}\selectfont\raggedright
+  \plainsect{Referencias}
+  \vspace{-2mm}
+  \begin{enumerate}[label={[\arabic*]}, leftmargin=1.8em, itemsep=2mm, topsep=0mm]
+    \item A.\,J. Hidalgo-Marín, A.\,J. Nebro, J. García-Nieto. Efficient Selection of Investment Portfolios in
+    Real-World Markets: A Multi-Objective Optimization Approach. \emph{Algorithms} 2026, 19(1), 20.
+    doi:10.3390/a19010020
+    \item M. López de Prado. Building Diversified Portfolios that Outperform Out of Sample. \emph{J. Portfolio
+    Management} 2016, 42(4), 59--69.
+    \item D. Goldfarb, A. Idnani. A numerically stable dual method for solving strictly convex quadratic
+    programs. \emph{Math. Programming} 1983, 27, 1--33.
+    \item J. Blank, K. Deb. pymoo: Multi-Objective Optimization in Python. \emph{IEEE Access} 2020, 8,
+    89497--89509.
+  \end{enumerate}
+\end{minipage}
+
+\end{document}
