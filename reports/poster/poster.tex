@@ -139,92 +139,50 @@ Híbrido & igual que HRP, orden de hojas & QP exacta y un gen de intercambio \\
 \end{column}
 \end{columns}
 
-\vspace{2.4mm}
+\vspace{2.2mm}
 \begin{block}{Mejora propuesta}
-La cardinalidad vuelve el problema un QP entero mixto. El evolutivo solo elige qué \(k\) activos entran. Con esa decisión fija, los pesos salen de un QP convexo. Un gen \(t\in[0,1]\) fija el punto de esa frontera, con aversión \(\gamma=10^{-2+6t}\). Si dos genes eligen el mismo activo, el duplicado sigue el orden de hojas del agrupamiento de López de Prado [2] (enlace simple). Ese vecino queda más correlacionado que el siguiente índice de la réplica: en ALL\(_{20}\) de 6\,000 activos, 0{,}56 frente a 0{,}48. Una cresta de \(10^{-8}\) regulariza covarianzas singulares. En 200 QP aleatorios, la brecha contra SLSQP fue \(2{,}5\times 10^{-10}\).
-\end{block}
-
-\vspace{1.2mm}
-\begin{center}
-\includegraphics[width=0.64\linewidth]{pymoo_replica_hrp_hybrid_reference_fronts.png}
-\end{center}
-{\footnotesize
-Frentes de referencia, 10 corridas por 3 algoritmos.
-En \(k=5\) las tres curvas se superponen.
-En \(k=20\) el híbrido recupera el extremo de alto retorno que el conjunto HRP pierde, y conserva el de bajo riesgo.
-\par}
+El evolutivo solo elige los \(k\) activos; los pesos salen de un QP convexo [5]. Un gen \(t\in[0,1]\) recorre esa frontera, con aversión \(\gamma=10^{-2+6t}\). Si dos genes repiten un activo, el duplicado sigue el orden de hojas de López de Prado [2]: en ALL\(_{20}\) de 6\,000 nombres ese vecino correlaciona 0{,}56, frente a 0{,}48 de la réplica.
 
 \vspace{1.4mm}
+\begin{center}
+\includegraphics[width=0.96\linewidth]{poster_sharpe_k20.png}
+\end{center}
+{\footnotesize
+Mejor Sharpe del frente de referencia, \(SR=(R-R_{f})/\sigma\), \(R_{f}=6{,}97\,\%\).
+En \(k=5\) las tres variantes coinciden a menos de 0{,}005.
+El híbrido tiene el mejor HV e IGD+ en las 12 instancias y supera a la réplica en 33 de 36 pares (Wilcoxon, 5\,\%).
+\par}
+\end{block}
+
+\vspace{2.0mm}
 \begin{columns}[t,onlytextwidth]
 \begin{column}{0.488\textwidth}
 \begin{block}{Réplica frente al artículo}
 \begin{center}
-\includegraphics[width=\linewidth]{pymoo_cd_plots.png}
+\includegraphics[width=\linewidth]{poster_ranks.png}
 \end{center}
 {\footnotesize
-Rango medio de Friedman en 12 instancias. La barra negra une algoritmos sin diferencia significativa (Nemenyi, \(\alpha=0{,}05\); CD\({}=0{,}957\)).
+Rango medio de Friedman, 12 instancias. Nemenyi, \(\alpha=0{,}05\), CD\({}=0{,}957\).
 \par}
-\vspace{1mm}
-\begin{center}
-\footnotesize
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{@{}lccc@{}}
-\toprule
-& SMS-EMOA & NSGA-II & MOEA/D \\
-\midrule
-Rango IGD+ & 1{,}17 & 1{,}92 & 2{,}92 \\
-Rango HV & 1{,}25 & 1{,}75 & 3{,}00 \\
-\bottomrule
-\end{tabular}
-\end{center}
+\vspace{1.0mm}
 \begin{itemize}
-\item Mismo orden que el artículo: SMS-EMOA, luego NSGA-II, MOEA/D atrás. SMS-EMOA lidera el IGD+ en 10 de 12 instancias y el HV en 9.
-\item En BATS de 5 activos, SMS-EMOA aporta el 65\,\% del frente (MOEA/D 24\,\%, NSGA-II 11\,\%).
-\item ALL de 20 activos y 6\,000 nombres: retorno máximo cercano a 218\,\% con riesgo 66--68\,\%, frente a 218{,}85\,\% y 67{,}89\,\% del artículo.
-\item En AMEX, la cartera de mayor retorno usa ARMP, ACU, BRIA, DSS y GAU.
-\item MOEA/D se queda en el centro: en AMEX su frente mediano arranca en riesgo \(\approx 0{,}09\), y el de referencia en \(0{,}05\).
+\item SMS-EMOA lidera el IGD+ en 10 de 12 instancias y el hipervolumen en 9. En BATS de 5 activos aporta el 65\,\% del frente.
+\item ALL de 20 activos y 6\,000 nombres: retorno máximo cercano a 218\,\% con riesgo 66--68\,\% (artículo: 218{,}85\,\% y 67{,}89\,\%).
+\item MOEA/D se queda en el centro. En AMEX su frente mediano arranca en riesgo \(\approx 0{,}09\); el de referencia, en \(0{,}05\).
 \end{itemize}
 \end{block}
 \end{column}
 \begin{column}{0.012\textwidth}\end{column}
 \begin{column}{0.488\textwidth}
-\begin{block}{Resultados de la mejora}
-{\footnotesize
-Mejor Sharpe del frente, \(SR=(R-R_{f})/\sigma\), \(R_{f}=6{,}97\,\%\).
-En las siete instancias de \(k=5\) las tres variantes coinciden a menos de 0{,}005.
-\par}
+\begin{block}{Fuera de muestra, 2024}
+Los frentes se optimizaron con precios de 2023. El año 2024 sale de Yahoo Finance. Entra una cartera si al menos el 80\,\% de su peso tiene historia completa en ambos años: 926 de 1\,266 tickers.
+\vspace{1.2mm}
 \begin{center}
-\footnotesize
-\setlength{\tabcolsep}{5pt}
-\renewcommand{\arraystretch}{1.06}
-\begin{tabular}{@{}lccc@{}}
-\toprule
-Instancia & Réplica & Conjunto HRP & Híbrido \\
-\midrule
-ALL\(_{20}\), 100 & 3{,}91 & 3{,}91 & 3{,}92 \\
-ALL\(_{20}\), 500 & 5{,}15 & 5{,}14 & 5{,}15 \\
-ALL\(_{20}\), 1\,000 & 5{,}77 & 5{,}79 & 5{,}83 \\
-\rowcolor{gain}
-ALL\(_{20}\), 3\,000 & 6{,}85 & 7{,}70 & \textbf{7{,}97} \\
-\rowcolor{gain}
-ALL\(_{20}\), 6\,000 & 7{,}94 & 8{,}35 & \textbf{8{,}95} \\
-\bottomrule
-\end{tabular}
+\includegraphics[width=\linewidth]{poster_oos_sharpe.png}
 \end{center}
 {\footnotesize
-El HV del frente unido del híbrido es el mejor en las 12 instancias, igual que su IGD+.
-Por corrida supera a la réplica en 33 de 36 pares (Wilcoxon, 5\,\%) y en ninguno es significativamente peor.
-El conjunto HRP, solo, queda por debajo en 11 de 15 pares con \(k=20\): el intercambio uniforme casi no cae en los activos de mayor retorno.
-\par}
-
-\vspace{1.5mm}
-\textbf{Fuera de muestra, 2024.}
-Los frentes se optimizaron con precios de 2023. El año 2024 sale de Yahoo Finance, con el mismo pipeline de los autores. Entra una cartera si al menos el 80\,\% de su peso tiene historia completa en ambos años: 926 de 1\,266 tickers.
-\begin{center}
-\includegraphics[width=0.76\linewidth]{oos_2024_sharpe_hybrid.png}
-\end{center}
-{\footnotesize
-Híbrido. Sharpe 2023 en \(x\), Sharpe 2024 en \(y\). Debajo de la diagonal, el Sharpe cayó.
+Cada flecha va del Sharpe mediano de 2023 al de 2024.
+ALL\(_{20}\) de 100 activos, réplica: sin carteras evaluadas.
 \par}
 \end{block}
 \end{column}
