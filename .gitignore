@@ -22,6 +22,9 @@ data/raw/*.csv
 data/processed/*.csv
 !data/processed/.gitkeep
 
+## Página de la evidencia (Canvas); se queda en local
+data/Evidencia*.html
+
 ## Reportes
 !reports/figures/.gitkeep
 
